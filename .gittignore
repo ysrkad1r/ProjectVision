@@ -1,0 +1,18 @@
+# Python & Sanal Ortam
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+venv/
+env/
+
+# Veri Setleri (Drive'da veya yerelde kalmalı, GitHub'a atılmamalı)
+data/
+*.zip
+*.json
+!models/epoch_2/qwen_lora/adapter_config.json
+
+# Sistem ve Editör
+.vscode/
+.idea/
+.DS_Store
