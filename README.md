@@ -3,13 +3,17 @@
 # ProjectVision v2.1
 ### Explainable Multimodal Vision-Language Model (VLM) & Minimalist AI Studio
 
+[![Version](https://img.shields.io/badge/Version-v2.1-18181b?style=flat-square)](README.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-18181b?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-18181b?style=flat-square&logo=python&logoColor=f4f4f5)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x%20(bfloat16)-18181b?style=flat-square&logo=pytorch&logoColor=ee4c2c)](https://pytorch.org/)
 [![Transformers](https://img.shields.io/badge/Transformers-SigLIP%20%2B%20Qwen2.5-18181b?style=flat-square&logo=huggingface&logoColor=ffd21e)](https://huggingface.co/)
 [![Quantization](https://img.shields.io/badge/BitsAndBytes-4--bit%20NF4%20%2B%20QLoRA-18181b?style=flat-square)](https://github.com/bitsandbytes-foundation/bitsandbytes)
-[![VRAM](https://img.shields.io/badge/VRAM%20Footprint-%3C%203.0%20GB%20Peak-18181b?style=flat-square)](#6-donanım-ve-vram-optimizasyonu-6-gb-gpu-koruması)
+[![VRAM](https://img.shields.io/badge/VRAM%20Footprint-%3C%203.0%20GB%20Peak-18181b?style=flat-square)](#7-donanım-ve-vram-optimizasyonu-6-gb-gpu-koruması)
 
-**ProjectVision**, sıfırdan inşa edilip iki aşamada eğitilmiş özel bir **Görsel-Dil Modeli (Vision-Language Model)** ve modelin karar verirken görüntünün hangi piksellerine odaklandığını gerçek zamanlı olarak görselleştiren **Açıklanabilir Yapay Zeka (XAI)** web stüdyosudur.
+*"Built an end-to-end multimodal pipeline integrating frozen SigLIP vision backbone with 4-bit Qwen2.5-3B via a custom-trained MLP projector and targeted QLoRA adapters."*
+
+**ProjectVision v2.1**, dondurulmuş (frozen) **SigLIP** görsel kodlayıcı omurgasını, özel olarak eğitilmiş 2 katmanlı bir **MLP projektör** ve hedefli **QLoRA** adaptörleri aracılığıyla 4-bit **Qwen2.5-3B-Instruct** dil modeliyle bütünleştiren uçtan uca çok modlu (multimodal) bir **Görsel-Dil Modeli (VLM)** boru hattı ve modelin karar verirken görüntünün hangi piksellerine odaklandığını gerçek zamanlı olarak görselleştiren **Açıklanabilir Yapay Zeka (XAI)** web stüdyosudur.
 
 </div>
 
@@ -17,7 +21,7 @@
 
 ## 1. Arayüz ve Canlı XAI Örnekleri (`assets/`)
 
-Arayüz; **Linear, Vercel ve Apple UI** tasarım ilkeleri doğrultusunda `#09090b` (Zinc-950) zemin, `#18181b` (Zinc-900) kart katmanları, ince yarı-şeffaf kenarlıklar ve **Inter + JetBrains Mono** tipografisiyle tasarlanmıştır. Model bir soruyu yanıtlarken odaklandığı bölgeleri **orijinal renklerinde** bırakır, dikkat etmediği arka planı ise **siyah-beyaz (grayscale)** formata çevirir.
+**ProjectVision v2.1** arayüzü; **Linear, Vercel ve Apple UI** tasarım ilkeleri doğrultusunda `#09090b` (Zinc-950) zemin, `#18181b` (Zinc-900) kart katmanları, ince yarı-şeffaf kenarlıklar ve **Inter + JetBrains Mono** tipografisiyle tasarlanmıştır. Model bir soruyu yanıtlarken odaklandığı bölgeleri **orijinal renklerinde** bırakır, dikkat etmediği arka planı ise **siyah-beyaz (grayscale)** formata çevirir.
 
 ### Örnek 1 — Nesne Sayma ve Keskin Görsel Odaklama (`flags.jpg`)
 > **Soru:** *"How many flags are there?"*  
@@ -53,9 +57,9 @@ Arayüz; **Linear, Vercel ve Apple UI** tasarım ilkeleri doğrultusunda `#09090
 
 ## 2. Model Mimarisi ve İki Aşamalı Eğitim Süreci
 
-Model üç ana bileşenin uçtan uca birleştirilmesiyle oluşturulmuştur:
+**ProjectVision v2.1**, üç ana bileşenin uçtan uca birleştirilmesiyle oluşturulmuştur:
 
-```
+```text
 ┌──────────────────────────────┐
 │   Girdi Görseli (RGB)        │
 │   384 × 384 Çözünürlük       │
@@ -87,7 +91,7 @@ Model üç ana bileşenin uçtan uca birleştirilmesiyle oluşturulmuştur:
 1. **Aşama 1 — Feature Alignment (Özellik Hizalama):**
    * `SigLIP` ve `Qwen2.5-3B` tamamen dondurulmuş, yalnızca **Vision Projector (`MLP`)** 15.000 COCO Caption örneği üzerinde (`lr=5e-4`, Cosine Warmup) eğitilerek görsel yamaların LLM uzayına taşınması sağlanmıştır.
 2. **Aşama 2 — Visual Instruction Tuning (Görsel Talimat İnce Ayarı):**
-   * Karma veri seti (**%40 Sayma / How Many**, **%25 Nesne ve Renk VQAv2**, **%20 COCO Captions**, **%15 LLaVA Instruct**) üzerinde hem **Vision Projector** (`lr=2e-5`) hem de **Qwen2.5 QLoRA adaptörü** (`lr=1e-4`, `r=16`, `lora_alpha=32`) birlikte 2 epoch boyunca eğitilmiştir.
+   * Karma veri seti (**%40 Sayma / How Many**, **%25 Nesne ve Renk VQAv2**, **%20 COCO Captions**, **%15 LLaVA Instruct** — toplam 12.000 örnek) üzerinde hem **Vision Projector** (`lr=2e-5`) hem de **Qwen2.5 QLoRA adaptörü** (`lr=1e-4`, `r=16`, `lora_alpha=32`) birlikte 2 epoch boyunca eğitilmiştir.
 
 ### Korunan Ortak Prompt Şablonu
 Eğitim ve çıkarım arasındaki dağılım kaymasını (distribution shift) önlemek için girdi metni iki parçaya ayrılarak tokenize edilir ve tam ortaya `576` görsel gömme (embedding) vektörü yerleştirilir:
@@ -102,7 +106,24 @@ You are a helpful assistant that can see images and answer questions directly an
 
 ---
 
-## 3. Açıklanabilir Yapay Zeka (XAI) ve Görsel Odaklama Algoritması
+## 3. Nicel Değerlendirme ve Sayısal Test Sonuçları (`assets/test_results.jpg`)
+
+Eğitim aşamalarının etkinliğini ölçmek amacıyla, eğitim setinden tamamen ayrılmış (unseen / held-out) **VQAv2 "How Many" (Nesne Sayma)** alt kümesi (100 test örneği) üzerinde nicel doğruluk (**Counting Accuracy**) ve eğitim kaybı (**Loss**) metrikleri kaydedilmiştir:
+
+| Model / Aşama | Veri & Metodoloji | Counting Accuracy (VQAv2 Subset, 100 samples) | Loss (Başlangıç → Bitiş) |
+| :--- | :--- | :---: | :---: |
+| **Base Qwen2.5-3B (Sıfır Eğitim)** | Çıkarım öncesi metin önbilgisi | `~12.0%` | `-` |
+| **Stage 1: Feature Alignment** | 15K COCO Captions (Sadece Projektör) | `~18.0%` | `2.68 → 1.91` |
+| **ProjectVision v2.1 (Stage 2 Final)** | 12K Mixed VQA (Projektör + QLoRA) | **`49.0%`** | **`1.54 → 0.75`** |
+| *SmolVLM-500M (Referans Küçük VLM)* | *Zero-shot VQA Counting (Literatür)* | `~41.0%` | `-` |
+
+![ProjectVision v2.1 Sayısal Test ve Değerlendirme Sonuçları](assets/test_results.jpg)
+
+* **Bulguların Analizi:** Yalnızca projektörün eğitildiği **Aşama 1** sonunda model genel sahne betimlemesi yapabilse de nesne sayma doğruluğu `%18.0` seviyesinde kalmıştır. **Aşama 2**'de hedefli QLoRA adaptörleri ve dengeli VQA karışımıyla yapılan ortak eğitim sonucunda kayıp (loss) `0.75` seviyesine inmiş ve sayma doğruluğu **`%49.0`**'a ulaşarak referans küçük VLM sınırını (`~%41.0`) geride bırakmıştır. Ayrıca eğitim sonunda uygulanan **Sıfır Tensör (Körlük / Zero-Tensor Ablation)** testleriyle modelin ezbere metin üretmediği, yanıtlarını doğrudan görsel yama temsiline dayandırdığı doğrulanmıştır.
+
+---
+
+## 4. Açıklanabilir Yapay Zeka (XAI) ve Görsel Odaklama Algoritması
 
 `core/attention.py` modülü, modelin yanıt üretirken görselin hangi bölgesine baktığını **4 aşamalı hibrit bir boru hattı** ile hesaplar:
 
@@ -120,7 +141,7 @@ You are a helpful assistant that can see images and answer questions directly an
 
 ---
 
-## 4. Kullanılan Teknolojiler
+## 5. Kullanılan Teknolojiler
 
 | Katman | Teknoloji / Kütüphane | Rolü ve Kullanım Amacı |
 | :--- | :--- | :--- |
@@ -134,13 +155,13 @@ You are a helpful assistant that can see images and answer questions directly an
 
 ---
 
-## 5. Proje Dizin Yapısı
+## 6. Proje Dizin Yapısı
 
-Proje, **Sorumlulukların Ayrılması (Separation of Concerns)** prensibine uygun olarak modüler bir yapıda kurgulanmıştır:
+**ProjectVision v2.1**, **Sorumlulukların Ayrılması (Separation of Concerns)** prensibine uygun olarak modüler bir yapıda kurgulanmıştır:
 
 ```text
 ProjectVisionAPP/
-├── app.py                          # Minimalist AI Studio arayüzü, özel CSS/HTML ve Gradio event bağlantıları
+├── app.py                          # Minimalist AI Studio arayüzü (ProjectVision v2.1), özel CSS/HTML ve Gradio event bağlantıları
 ├── core/
 │   ├── __init__.py                 # Core paket tanımı
 │   ├── config.py                   # Model kimlikleri, prompt şablonu ve ağırlık dizini çözümleyici
@@ -152,20 +173,23 @@ ProjectVisionAPP/
 │   └── qwen_lora/                  # Eğitilmiş QLoRA adaptör ağırlıkları
 │       ├── adapter_config.json
 │       └── adapter_model.safetensors
-├── assets/                         # Uygulama içi ekran görüntüleri ve XAI odak maskesi örnekleri
+├── assets/                         # Uygulama içi ekran görüntüleri, XAI odak maskesi örnekleri ve test sonuçları
 │   ├── cat1.jpg
 │   ├── cat2.jpg
 │   ├── flags.jpg
-│   └── kurek1.jpg
+│   ├── kurek1.jpg
+│   └── test_results.jpg
 ├── ProjectVisionV3.ipynb           # Veri hazırlama, 2 aşamalı eğitim ve değerlendirme (Counting Accuracy) notebook'u
+├── requirements.txt                # Temel Python kütüphane bağımlılıkları
+├── LICENSE                         # MIT Lisansı
 └── README.md                       # Proje dokümantasyonu
 ```
 
 ---
 
-## 6. Donanım ve VRAM Optimizasyonu (6 GB GPU Koruması)
+## 7. Donanım ve VRAM Optimizasyonu (6 GB GPU Koruması)
 
-Proje, **6 GB VRAM'e sahip yerel GPU'larda** (örn. NVIDIA RTX 3060 / 4050 Laptop GPU) OOM (Out-Of-Memory) hatası almadan çalışacak şekilde optimize edilmiştir:
+**ProjectVision v2.1**, **6 GB VRAM'e sahip yerel GPU'larda** (örn. NVIDIA RTX 3060 / 4050 Laptop GPU) OOM (Out-Of-Memory) hatası almadan çalışacak şekilde optimize edilmiştir:
 
 * **Yalnızca Görüntü Kulesi Yükleme:** `AutoModel` yerine doğrudan `SiglipVisionModel` kullanılarak SigLIP'in metin kodlayıcısı belleğe hiç alınmaz (~0.4 GB VRAM tasarrufu).
 * **Saf `bfloat16` Boru Hattı:** `VisionProjector`, `SigLIP` ve Qwen'in `norm`, `lm_head`, `embed_tokens` katmanları `torch.bfloat16` üzerinde kilitlenerek gereksiz `float32` dönüşümleri engellenir.
@@ -178,14 +202,14 @@ Proje, **6 GB VRAM'e sahip yerel GPU'larda** (örn. NVIDIA RTX 3060 / 4050 Lapto
 
 ---
 
-## 7. Kurulum ve Çalıştırma
+## 8. Kurulum ve Çalıştırma
 
 ### 1. Gereksinimleri Yükleyin
-CUDA destekli PyTorch kurulumunun ardından gerekli paketleri yükleyin:
+CUDA destekli PyTorch kurulumunun ardından `requirements.txt` içerisindeki temel kütüphaneleri yükleyin:
 
 ```bash
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
-pip install transformers peft bitsandbytes accelerate safetensors gradio pillow numpy
+pip install -r requirements.txt
 ```
 
 ### 2. Ağırlık Dosyalarını Doğrulayın
@@ -201,3 +225,16 @@ python app.py
 ```
 
 Uygulama başladığında tarayıcınızdan **`http://127.0.0.1:7860`** adresine giderek görsellerinizi yükleyebilir, sorularınızı sorabilir ve **Focus Mask / Original / Heatmap** sekmeleri üzerinden modelin dikkat analizini inceleyebilirsiniz.
+
+---
+
+## 9. Limitations & Failure Modes (Sınırlılıklar ve Hata Modları)
+
+* **Heuristic XAI:** Görselleştirme yöntemi, son katman decoder cross-attention ağırlıkları üzerine uygulanan normalize edilmiş uzamsal filtreleme ve enterpolasyon (bilinear interpolation) içeren sezgisel (heuristic) bir yaklaşımdır; mutlak bir nedensellik garantisi sunmaz.
+* **Template Overfitting:** Model Aşama 2'de ağırlıklı olarak VQAv2 şablonlarıyla eğitildiği için kısa ve net (*"The answer is..."*, *"There are..."*) kalıplar üretmeye meyillidir. Dağılım dışı (OOD) serbest diyaloglarda zaman zaman Aşama 1'deki genel tasvir (caption) refleksine geri dönebilmektedir.
+
+---
+
+## 10. Lisans
+
+Bu proje **MIT Lisansı** altında lisanslanmıştır — detaylar için [LICENSE](LICENSE) dosyasına göz atabilirsiniz.

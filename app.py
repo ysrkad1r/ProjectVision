@@ -1,4 +1,4 @@
-"""ProjectVision XAI — Minimalist AI Studio UI (components, layout and CSS only).
+"""ProjectVision v2.1 — Minimalist AI Studio UI (components, layout and CSS only).
 
 Run:  python app.py
 """
